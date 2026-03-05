@@ -1,553 +1,296 @@
-# Coxy Plutus Playground
+Plinth/Plutus Playground 
 
-### Developer Documentation & Project Specification
+<img width="542" height="628" alt="image" src="https://github.com/user-attachments/assets/4c54db1b-6fda-48ec-a535-d961e70cd8ff" />
 
-An open development project to transform **Coxy Plutus Builder Studio (CPBS)** into a full **Plutus Smart Contract Playground**, similar to **Remix IDE** used in the Ethereum ecosystem.
+Company: Coxygen Global
 
-The playground will provide developers with a **web-based development environment** where they can write, edit, compile, and test **Plutus** smart contracts without installing complex local toolchains.
+Author:  Bernard Sibanda
 
-The system integrates the **Glasgow Haskell Compiler**, **Cabal**, and **Nix** to compile Plutus contracts inside a secure backend environment.
+Date:    17-02-2026
 
-This README serves as a **technical specification and implementation guide for developers** contributing to the project.
+## Table of Contents
 
----
+1. [Document Control](#1-document-control)
+2. [Background and Problem Statement](#2-background-and-problem-statement)
+3. [Goals and Non-Goals](#3-goals-and-non-goals)
+4. [Scope and Release Phases](#4-scope-and-release-phases)
+5. [Users, Personas, and Primary Workflows](#5-users-personas-and-primary-workflows)
+6. [Functional Requirements](#6-functional-requirements)
+7. [Non-Functional Requirements](#7-non-functional-requirements)
+8. [System Architecture](#8-system-architecture)
+9. [Compiler Service Specification](#9-compiler-service-specification)
+10. [API Specification](#10-api-specification)
+11. [Data Models and Artifact Formats](#11-data-models-and-artifact-formats)
+12. [Frontend Application Specification](#12-frontend-application-specification)
+13. [Security, Abuse Prevention, and Compliance](#13-security-abuse-prevention-and-compliance)
+14. [Operations, Deployment, and Observability](#14-operations-deployment-and-observability)
+15. [Testing Strategy](#15-testing-strategy)
+16. [Migration Plan](#16-migration-plan)
+17. [Risks and Open Questions](#17-risks-and-open-questions)
+18. [Glossary](#18-glossary)
 
-# Table of Contents
+## 1. Document Control
 
-1. Project Overview
-2. Key Features
-3. System Specifications
-4. System Requirements
-5. Compiler and Build Architecture
-6. Development Phases
-7. Workspace Structure Specification
-8. Backend Architecture
-9. Compile API Specification
-10. Job Management System
-11. Security and Sandboxing
-12. Caching Strategy
-13. Observability and Monitoring
-14. Frontend IDE Architecture
-15. Expected Outputs and Artifacts
-16. Contribution Guidelines
+1.1. **Document title.** This document specifies the product and engineering requirements for an online “Plutus Playground” built on top of the `plutus-nix` repository and its pinned Nix + Cabal toolchain. 
 
----
+1.2. **Status.** This specification is intended to be implementation-ready for an MVP that supports browser-based editing and server-side compilation, and it defines an extension path that integrates the existing CHPB (Coxy Haskell Plutus Builder) workflow into the same web experience. 
 
-# 1. Project Overview
+1.3. **Scope boundary.** This specification treats compilation as a server-side operation and does not require running GHC or Nix inside the user’s browser.
 
-One of the main limitations in the **Cardano smart contract ecosystem** is the lack of a beginner-friendly development environment comparable to **Remix IDE** used by Ethereum developers.
+## 2. Background and Problem Statement
 
-Developing **Plutus smart contracts** typically requires installing and configuring multiple tools such as:
+2.1. **Current state.** Today, `plutus-nix` is used by entering a reproducible Nix development shell and building the Haskell packages with Cabal, including the `wspace` contract modules under `code/wspace/lecture`. 
 
-* GHC
-* Cabal
-* Nix
-* Cardano development libraries
-* Plutus frameworks
+2.2. **Existing builder (static).** The CHPB tool is a web-based interface that generates machine-readable JSON specifications and a downloadable `ValidatorLogic.hs` module that the user currently integrates into a local Haskell project for compilation and deployment. 
 
-These requirements create a **significant barrier for beginners and students**.
+2.3. **Problem.** New and intermediate developers frequently want a “Remix-like” experience where they can write, generate, compile, and inspect outputs in a single web UI, without first installing Nix, GHC, Cabal, or platform-specific dependencies.
 
-To address this challenge, **Coxygen Global** developed **Coxy Plutus Builder Studio (CPBS)**, a tool that allows developers to generate Plutus validator templates using predefined smart contract structures.
+2.4. **Opportunity.** Plutus Playground historically used a client + server model where compilation happens on a server, with a browser UI driving compilation and showing logs and results, and where Nix and binary caches can speed builds. 
 
-The objective of this project is to **upgrade CPBS into a full Plutus Playground**, allowing developers to:
+## 3. Goals and Non-Goals
 
-* Open smart contract templates
-* Edit Plutus code
-* Compile contracts online
-* View compilation logs
-* Download compiled contract artifacts
+3.1. **Goal: Web-first authoring and compilation.** The system shall provide an in-browser code editor and a one-click compile flow that produces downloadable artifacts, without requiring local Nix for the user.
 
----
+3.2. **Goal: Reproducible compiler environment.** The system shall compile using a pinned environment consistent with the repo’s Nix flake setup, including the specified GHC and cabal-install versions, so that outputs are deterministic across users and over time. 
 
-# 2. Key Features
+3.3. **Goal: Templates aligned with repository examples.** The system shall offer starter templates based on the repository’s contract modules (for example, Vesting and Parameterized Vesting) so users can start from known-working code. 
 
-The Plutus Playground must provide the following major features.
+3.4. **Goal: CHPB integration path.** The system shall support generating JSON specs and `ValidatorLogic.hs` from CHPB and compiling those outputs in the same online environment. 
 
-### 2.1 Web-Based IDE
+3.5. **Non-goal: Full on-chain deployment from the browser (MVP).** The MVP shall not be required to submit transactions to Cardano mainnet or testnet, because that requires wallet integration, key management, and network-specific operational concerns.
 
-Developers must be able to write and edit Plutus contracts directly in a browser.
+3.6. **Non-goal: Client-side compilation.** The MVP shall not compile inside the browser, because the Nix + GHC toolchain is too heavy and would create inconsistent performance across devices.
 
-Core IDE components include:
+## 4. Scope and Release Phases
 
-* File explorer
-* Code editor
-* Tabbed file views
-* Compilation controls
-* Console output panel
+4.1. **Phase 1 (MVP): Online Editor + Compile + Artifacts.** The MVP shall include a browser editor, template loading, server-side compilation jobs, streaming or polled logs, and artifact download.
 
-The editor must support:
+4.2. **Phase 2 (Enhanced): CHPB in the same Playground.** The enhanced release shall embed or integrate CHPB so that “Generate Logic Spec” produces the same JSON and Haskell outputs as today, and a “Compile” action compiles those outputs using the server toolchain. 
 
-* Haskell syntax highlighting
-* Error highlighting
-* Real-time editing
+4.3. **Phase 3 (Optional): Simulation and scenario runner.** A later release may run emulator scenarios and show traces, but this is optional and not required for the initial platform conversion.
 
----
+## 5. Users, Personas, and Primary Workflows
 
-### 2.2 Template-Based Smart Contract Development
+5.1. **Persona A: Beginner learner.** This user wants to open a known-good contract, make small edits, compile, and download a `.plutus` artifact and related outputs without setting up a local environment.
 
-The playground must allow developers to start with predefined contract templates such as:
+5.2. **Persona B: Contract author.** This user wants rapid iteration loops with clear errors and logs, and they want reproducible builds that match CI and teammates.
 
-* Vesting contracts
-* Parameterized vesting contracts
-* Marketplace validators
-* Auction validators
+5.3. **Persona C: CHPB-driven builder.** This user prefers configuring datum/redeemer/actions/constraints via CHPB and expects the system to generate JSON and `ValidatorLogic.hs`, then compile them without leaving the browser. 
 
-Templates will come from the **CPBS library**.
+5.4. **Workflow 1: Compile a template contract.** The user selects a template (for example a Vesting module), edits code, clicks “Compile”, reviews logs, and downloads artifacts.
 
-Each template contains:
+5.5. **Workflow 2: Generate with CHPB then compile.** The user configures an industry, datum, redeemer, and constraints, clicks “Generate Logic Spec”, reviews JSON and Haskell outputs, and then clicks “Compile” to produce artifacts. 
 
-* Validator logic
-* Datum definitions
-* Redeemer definitions
-* Constraint rules
+5.6. **Workflow 3: Share a reproducible build.** The user exports a workspace bundle (or share link) that can be compiled again to produce the same outputs under the pinned toolchain.
 
----
+## 6. Functional Requirements
 
-### 2.3 Online Compilation
+### 6.1 Workspace and File Management
 
-The system must compile smart contracts directly in the browser environment using a backend compilation service.
+6.1.1. **Workspace definition.** A workspace shall be a named collection of source files and configuration files that represent a compilable unit, including Haskell modules and any required Cabal project metadata.
 
-Compilation must generate:
+6.1.2. **Template workspaces.** The system shall ship with templates that map to existing repo modules located under `code/wspace/lecture`, so that templates are aligned with known examples. 
 
-* `.plutus` compiled scripts
-* CBOR encoded scripts
-* Script hash values
-* Contract addresses when applicable
+6.1.3. **In-browser persistence.** The frontend shall store the user’s current workspace state in browser storage so that accidental refresh does not destroy work, unless the user explicitly resets or clears it.
 
----
+6.1.4. **Workspace export.** The system shall allow exporting a workspace as a single archive file so that the same content can be compiled later or shared offline.
 
-### 2.4 Compilation Logs
+### 6.2 Editor and UX Behavior
 
-Developers must be able to view detailed compilation logs including:
+6.2.1. **Editor features.** The editor shall support syntax highlighting for Haskell and provide basic developer affordances such as search, replace, file tabs, and jump-to-error navigation.
 
-* parser errors
-* typechecking errors
-* dependency build logs
-* build success messages
+6.2.2. **Compile trigger.** The UI shall expose a clear “Compile” action that initiates a server-side compilation job and returns logs and results to the user.
 
-Logs must update in real time while compilation runs.
+6.2.3. **Error display.** Compilation errors shall be shown with enough structure for the UI to highlight file and line numbers when available, and raw logs shall remain accessible for copy/paste.
 
----
+### 6.3 Compilation Targets and Outputs
 
-### 2.5 Artifact Download
+6.3.1. **Target selection.** The user shall be able to select a compilation target that indicates which module or entry point should be compiled, because a repository may contain multiple modules and tests. 
 
-After successful compilation the system must allow users to download build artifacts including:
+6.3.2. **Artifact manifest.** Every successful compile shall produce an artifact manifest that lists all outputs, their types, file names, sizes, hashes, and logical meaning (for example “compiled script”, “generated JSON spec”, “validator module source”).
 
-* compiled Plutus scripts
-* JSON artifact manifest
-* generated Haskell modules
-* CBOR encoded scripts
+6.3.3. **Downloadable bundle.** The system shall provide a single downloadable zip bundle per compile job that includes the artifact manifest and all referenced artifact files.
 
----
+6.3.4. **Log retention.** Logs shall remain accessible for a bounded retention window so that users can return to results without immediately re-running a compile.
 
-### 2.6 Workspace Management
+### 6.4 CHPB Integration Requirements (Phase 2)
 
-The IDE must support a structured project workspace similar to a local development project.
+6.4.1. **Preserve CHPB semantics.** The integrated CHPB experience shall continue to support industries, datum fields, redeemer actions, constraints, and optional parameter datum as described in the current CHPB tutorial. ([GitHub][2])
 
-Developers must be able to:
+6.4.2. **Generate the same outputs.** CHPB shall generate datum JSON, redeemer JSON, a mkValidator preview, and a full Haskell module, and it shall support downloading `ValidatorLogic.hs` as an artifact. 
 
-* create files
-* edit files
-* upload workspace archives
-* download full workspaces
+6.4.3. **Compile CHPB outputs.** The Playground shall be able to place the generated `ValidatorLogic.hs` into the active workspace and compile it using the same server-side pipeline as template projects.
 
----
+## 7. Non-Functional Requirements
 
-# 3. System Specifications
+7.1. **Reproducibility.** A given workspace compiled under a given toolchain version shall produce stable outputs, and the UI shall display the toolchain identity to the user, including the pinned versions visible in the Nix flake configuration. 
 
-The system consists of four major subsystems.
+7.2. **Performance targets.** The system shall provide acceptable compile latency by using caching, and it shall explicitly distinguish cold-start latency from warm-start latency, because Nix builds can be heavy without a cache. 
 
-### Frontend IDE
+7.3. **Scalability.** The system shall support concurrent compile jobs by using a job queue and worker pool, and it shall have explicit per-user rate limits.
 
-Browser-based development interface.
+7.4. **Availability.** The system shall be designed so that transient worker failures do not lose user work, and jobs shall fail with clear error messages when the system is overloaded.
 
-Responsibilities:
+7.5. **Security.** The system shall treat user-provided code as untrusted input and shall compile it in a sandbox with restricted permissions, bounded resources, and explicit limits.
 
-* code editing
-* file navigation
-* triggering compilation
-* displaying logs
+## 8. System Architecture
 
----
+8.1. **High-level model.** The system shall follow a client/server pattern where the browser UI handles editing and orchestration, and the server performs compilation and returns outputs, which matches the historical “playground server + client” concept. 
 
-### Backend Compiler Service
+8.2. **Frontend.** The frontend shall be a single-page web application that manages workspaces, renders templates, provides editor and CHPB panels, and communicates with the backend via a versioned HTTP API.
 
-Server-side service responsible for compiling Plutus contracts.
+8.3. **Backend services.** The backend shall be composed of an API service and one or more compile workers. The API service shall accept job submissions, return job status, and mediate artifact download. Compile workers shall run in sandboxed environments and execute the actual Nix + Cabal compilation steps.
 
-Responsibilities:
+8.4. **Artifact storage.** The backend shall store job logs and artifacts in a durable store (local filesystem, object storage, or equivalent) for the retention period, and it shall remove them after expiry.
 
-* executing compilation commands
-* managing build environments
-* returning compiled artifacts
+8.5. **Caching layer.** The system shall implement caching for Nix store artifacts and build dependencies, and it shall support binary cache usage to reduce repeated compile time. 
 
----
+## 9. Compiler Service Specification
 
-### Containerized Build Environment
+9.1. **Pinned toolchain.** The compile environment shall use the repository’s flake-defined toolchain, including the configured GHC and cabal-install versions, because the flake establishes the intended reproducible environment. 
 
-Each compilation must run inside a container to guarantee consistent builds.
+9.2. **Build procedure (conceptual).** For each job, the worker shall (a) materialize the workspace into an isolated directory, (b) enter the pinned environment, (c) execute the configured build commands, and (d) collect outputs into the artifact bundle.
 
-Responsibilities:
+9.3. **Timeouts.** Each compile job shall have a strict maximum runtime (for example 2–5 minutes for MVP), and jobs that exceed the limit shall be terminated and marked as timed out.
 
-* providing deterministic build environments
-* isolating builds for security
-* preventing resource abuse
+9.4. **Resource limits.** Each job shall have explicit CPU and memory limits that prevent noisy-neighbor behavior and mitigate denial-of-service attempts.
 
----
+9.5. **Network policy.** By default, compilation shall run with network egress disabled, except where a controlled cache endpoint is required, because untrusted code should not be allowed to exfiltrate data.
 
-### Job Orchestration System
+9.6. **Output constraints.** Jobs shall have maximum log size and maximum artifact size to prevent storage abuse, and truncation behavior shall be explicit in both API responses and UI messaging.
 
-Manages compilation jobs.
+## 10. API Specification
 
-Responsibilities:
+10.1. **API versioning.** The API shall be versioned (for example `/api/v1/`) so that frontend and backend can evolve without breaking existing deployments.
 
-* queue management
-* concurrency limits
-* runtime limits
-* job status tracking
+10.2. **Submit compile job.**
+`POST /api/v1/jobs` shall accept a request containing (a) workspace content, (b) selected compile target, and (c) optional build parameters. The response shall return a `jobId`, an initial `status`, and a URL for job status polling.
 
----
+10.3. **Get job status.**
+`GET /api/v1/jobs/{jobId}` shall return the current job status, timestamps, toolchain identity, and a pointer to logs. The status model shall support at least: `queued`, `running`, `succeeded`, `failed`, `timed_out`, and `canceled`.
 
-# 4. System Requirements
+10.4. **Get logs.**
+`GET /api/v1/jobs/{jobId}/logs` shall return logs either as a single payload or as a paged/streamed response. The API shall clearly indicate if logs were truncated.
 
-The backend compilation system requires the following development tools.
+10.5. **Download artifacts.**
+`GET /api/v1/jobs/{jobId}/artifacts.zip` shall return a zip bundle that includes all artifacts plus a manifest file.
 
-### Core Development Tools
+10.6. **List templates.**
+`GET /api/v1/templates` shall return a list of templates that the frontend can display in a gallery, and each template shall have an identifier, display name, description, and template contents.
 
-* **Glasgow Haskell Compiler**
-* **Cabal**
-* **Nix**
+10.7. **Health and version.**
+`GET /api/v1/health` shall return a basic liveness response.
+`GET /api/v1/version` shall return the backend build version and the compiler toolchain identity as displayed in the UI.
 
-These tools are required to compile Plutus contracts and manage Haskell dependencies.
+## 11. Data Models and Artifact Formats
 
----
+11.1. **Job object.** A job shall include at least `jobId`, `createdAt`, `startedAt`, `finishedAt`, `status`, `target`, `toolchain`, and `resultSummary`.
 
-### Container Technology
+11.2. **Toolchain identity.** The toolchain identity shall include sufficient information to explain reproducibility, including the Nix flake identity and visible compiler tool versions such as GHC and cabal-install. 
 
-Compilation must run inside containers built using:
+11.3. **Artifact manifest.** The manifest shall be a JSON document that lists each artifact with fields such as `name`, `path`, `contentType`, `sha256`, `bytes`, and `role`. The manifest shall also include a summary describing what was compiled and how.
 
-* Docker
+11.4. **CHPB artifacts.** When CHPB is used, the artifact bundle shall include the generated datum JSON, redeemer JSON, and `ValidatorLogic.hs`, because those outputs are part of the CHPB export pipeline described in the existing tutorial.
 
-Containers guarantee that all developers use identical environments.
+## 12. Frontend Application Specification
 
----
+12.1. **Core layout.** The UI shall provide a three-pane experience: a left navigation panel for templates and files, a central editor panel, and a bottom or right output panel for logs and artifacts.
 
-### Development Environment
+12.2. **Compile experience.** When the user compiles, the UI shall show a clear running state, stream or poll logs, and provide a stable job detail view that remains accessible even after navigation.
 
-The project uses a Nix development shell that pins:
+12.3. **Artifact exploration.** After a successful compile, the UI shall show a structured artifact list derived from the manifest, and it shall provide one-click download of the full bundle.
 
-* compiler versions
-* package versions
-* build dependencies
+12.4. **CHPB experience (Phase 2).** The UI shall provide a CHPB tab or mode that exposes industry selection, datum fields, redeemer actions and constraints, and “Generate Logic Spec,” matching CHPB’s described flow, and it shall expose “Compile” so that generation and compilation are connected. 
 
-This ensures deterministic builds.
+## 13. Security, Abuse Prevention, and Compliance
 
----
+13.1. **Threat model.** The system shall assume that workspace contents are hostile, and it shall treat compilation as an untrusted execution task that must be sandboxed and rate-limited.
 
-# 5. Compiler and Build Architecture
+13.2. **Sandboxing.** Workers shall compile under a non-root user, inside an isolated environment with limited filesystem access, and with clear CPU/memory/time constraints.
 
-The compilation pipeline consists of several phases similar to traditional compiler architecture.
+13.3. **Rate limiting.** The API shall apply per-IP and per-user limits that prevent repeated heavy compiles from degrading service.
 
-### Phase 1 — Source Code Input
+13.4. **Content limits.** The API shall reject overly large workspace submissions and shall enforce limits on number of files and total bytes.
 
-Developers write or modify Plutus smart contract source files in the IDE.
+13.5. **Secret handling.** The system shall not require users to provide wallet secrets or private keys for the MVP, because that would dramatically increase security and compliance risk.
 
-These files are stored in the workspace.
+## 14. Operations, Deployment, and Observability
 
----
+14.1. **Deployment model.** The backend shall run as a set of services (API + workers) that can be scaled independently, and the frontend shall be deployable as a static web app.
 
-### Phase 2 — Lexical Analysis
+14.2. **Caching operations.** Operators shall be able to pre-warm caches and enable controlled binary cache usage, because this materially affects compile latency in Nix-based systems. 
 
-The compiler scans source code and converts characters into tokens.
+14.3. **Observability.** The system shall record metrics including job duration, failure rate, queue depth, cache hit rate, and artifact size distribution, and it shall retain server logs for debugging.
 
-Tokens include:
+14.4. **Cost controls.** The system shall include job quotas and retention policies, because compilation is compute-heavy and artifacts can consume storage.
 
-* keywords
-* identifiers
-* operators
-* constants
+## 15. Testing Strategy
 
-Example:
+15.1. **Unit tests.** Backend code shall be unit-tested for request validation, job state transitions, artifact bundling, and manifest correctness.
 
-```
-int x = 10;
-```
+15.2. **Integration tests.** The system shall include end-to-end tests that submit a known template workspace and verify that compilation succeeds and produces expected artifact types.
 
-Tokens:
+15.3. **Regression tests for templates.** Templates derived from `code/wspace/lecture` shall be continuously compiled in CI to ensure that the online experience remains aligned with the repository examples.
 
-```
-int
-x
-=
-10
-;
-```
+15.4. **Security tests.** The sandbox shall be tested with adversarial payloads that attempt excessive CPU usage, oversized outputs, and prohibited filesystem access.
 
----
+## 16. Migration Plan
 
-### Phase 3 — Syntax Analysis
+16.1. **MVP migration.** The first migration step shall port only the “edit + compile” flows while keeping CHPB external or embedded as a link, so that compilation infrastructure is validated before UI complexity increases.
 
-The compiler checks whether tokens follow valid language grammar.
+16.2. **CHPB migration (Phase 2).** The second step shall integrate CHPB into the Playground and connect “Generate Logic Spec” to the workspace and compiler pipeline, while preserving its current outputs and behavior. 
 
-Invalid syntax results in parser errors.
+16.3. **User documentation.** The migration shall include updated docs that explain the new online flow and explicitly call out that local Nix is no longer required for compilation, while still allowing local development as an option.
 
----
+## 17. Risks and Open Questions
 
-### Phase 4 — Semantic Analysis
+17.1. **Cold-start latency risk.** Nix-based builds can be slow without caches, so the success of the online experience depends on careful caching and pre-warming practices.
 
-The compiler verifies logical correctness.
+17.2. **Target definition risk.** The system must define “what to compile” in a way that is understandable to users and maps cleanly to repo structure, otherwise users will be confused by Cabal target selection.
 
-Checks include:
+17.3. **Artifact format risk.** The system must be explicit about which outputs are produced for which contract and which are only available when a module contains serialization/export code.
 
-* type compatibility
-* variable declarations
-* valid operations
+17.4. **CHPB integration risk.** If CHPB-generated `ValidatorLogic.hs` requires additional surrounding project scaffolding, the Playground must supply that scaffolding automatically to make “Generate then Compile” succeed reliably.
 
----
+## 18. Glossary
 
-### Phase 5 — Intermediate Code Generation
+**Artifact** means any file produced by a compilation job, including logs, compiled scripts, generated JSON, and generated Haskell modules.
 
-The compiler converts source code into intermediate representations before generating machine code.
+**Artifact manifest** means a machine-readable JSON file that enumerates all artifacts produced by a job and describes their roles, hashes, and sizes.
 
-Intermediate code allows optimization and platform independence.
+**Binary cache** means a cache of prebuilt Nix store outputs that can be substituted instead of rebuilt, which can substantially reduce build time. 
 
----
+**Cabal** means the Haskell build tool and package manager used to build project components and run tests. 
 
-### Phase 6 — Code Optimization
+**CHPB (Coxy Haskell Plutus Builder)** means the web-based builder that helps users define Plutus validator logic via industry templates or custom configuration, and that generates JSON specs and `ValidatorLogic.hs`.
 
-The compiler optimizes the code to improve performance.
+**Compile job** means a single server-side execution that takes a workspace and produces logs and artifacts under a sandbox.
 
-Examples include:
+**Constraint** means a named logical requirement enforced by a validator, which CHPB can bind to redeemer actions and translate into Haskell guards.
 
-* removing unused code
-* simplifying constant expressions
-* improving loops
+**Datum** means the on-chain data associated with a contract instance, typically attached to a UTxO and modeled as a Haskell data type in Plutus. 
 
----
+**Flake** means a Nix project structure defined by `flake.nix` that pins inputs and outputs to produce reproducible environments. 
 
-### Phase 7 — Code Generation
+**GHC** means the Glasgow Haskell Compiler, which is part of the pinned toolchain used by the project’s Nix flake. 
 
-The final compilation step produces executable artifacts such as:
+**Nix dev shell** means the reproducible development environment entered via `nix develop` that provides the correct compiler toolchain for building the repository. 
 
-* `.plutus` contract scripts
-* CBOR encoded scripts
+**Redeemer** means an on-chain input that represents the user’s intended action when spending a script output, and which CHPB models as action variants with constraints. 
 
----
+**Sandbox** means an isolated environment with restricted permissions and resources that is used to compile untrusted user code.
 
-# 6. Development Phases
+**ScriptContext** means the transaction context provided to a validator during validation, which is referenced by validators when enforcing constraints (for example signature checks).
 
-Developers must follow the phases below to implement the playground.
+**Template** means a preconfigured workspace or contract starting point supplied by the Playground, typically derived from repository examples such as the `wspace` lecture modules. 
 
----
+**Toolchain identity** means a structured description of the compiler environment used for a job, including the pinned Nix and compiler versions, so results are explainable and reproducible. 
 
-# Phase 1 — Product Definition and UX Flow
+**UTxO** means an Unspent Transaction Output, which is Cardano’s accounting model and the unit that scripts lock and unlock.
 
-The user workflow must be clearly defined.
+**ValidatorLogic.hs** means the CHPB-generated Haskell module that contains a validator skeleton, pattern matching over redeemer actions, and placeholder constraint calls, intended to be integrated and compiled.
 
-The expected workflow is:
-
-1. user opens a template
-2. user edits the contract
-3. user clicks compile
-4. logs appear in console
-5. compiled artifacts are produced
-6. user downloads outputs
-
-Each compile target must map to specific build commands.
-
----
-
-# Phase 2 — Workspace Layout Definition
-
-A standard project workspace format must be defined.
-
-Workspace must include:
-
-```
-workspace/
- ├── src/
- ├── validators/
- ├── plutus.json
- ├── cabal.project
- └── README.md
-```
-
-Templates must exist for:
-
-* Vesting
-* Parameterized Vesting
-
----
-
-# Phase 3 — CLI Compiler Runner
-
-A command line tool must be implemented.
-
-Example command:
-
-```
-plutus-playground compile <module>
-```
-
-The CLI must:
-
-* compile modules
-* produce artifacts
-* generate build logs
-
----
-
-# Phase 4 — Containerized Build System
-
-A Docker image must be created containing:
-
-* Nix
-* GHC
-* Cabal
-* Plutus libraries
-
-The image must be able to compile example contracts.
-
----
-
-# Phase 5 — Compile API
-
-The backend must expose HTTP endpoints.
-
-Example:
-
-```
-POST /compile
-GET /health
-GET /version
-```
-
-The `/compile` endpoint must:
-
-* accept workspace upload
-* start compilation job
-* return logs
-* return artifact bundle
-
----
-
-# Phase 6 — Job Orchestration
-
-Compilation jobs must be controlled by a queue system.
-
-Features include:
-
-* concurrency limits
-* job timeout limits
-* automatic cleanup
-
-Job states must include:
-
-* queued
-* running
-* succeeded
-* failed
-
----
-
-# Phase 7 — Build Caching
-
-The system must implement caching to reduce build times.
-
-Possible methods include:
-
-* Nix binary cache
-* prebuilt dependency layers
-
-The system must track:
-
-* cache hits
-* cache misses
-
----
-
-# Phase 8 — Security and Sandboxing
-
-Compilation jobs must run in restricted environments.
-
-Security rules include:
-
-* non-root execution
-* CPU limits
-* memory limits
-* network restrictions
-
-Additional protections:
-
-* upload size limits
-* request rate limits
-
----
-
-# Phase 9 — Frontend IDE Development
-
-The final phase implements the web-based IDE.
-
-Required components include:
-
-* file explorer
-* code editor
-* compile button
-* compilation logs panel
-
-Users must see compilation states:
-
-* queued
-* running
-* success
-* failure
-
----
-
-# 7. Expected Outputs
-
-Successful compilation must produce the following outputs.
-
-### Script Artifacts
-
-```
-contract.plutus
-contract.cbor
-artifact.json
-```
-
----
-
-### Artifact Manifest
-
-Example manifest:
-
-```
-{
- "scriptHash": "...",
- "address": "...",
- "compiledScript": "contract.plutus"
-}
-```
-
----
-
-# 8. Contribution Guidelines
-
-Developers contributing to the project should:
-
-1. follow the workspace structure
-2. ensure builds run in the Nix environment
-3. test compile targets before submission
-4. document new features
-5. maintain deterministic builds
-
----
-
-# 9. Project Goal
-
-The final objective is to deliver a **fully functional Plutus smart contract playground** that enables developers to prototype and test contracts directly in the browser.
-
-This will significantly improve accessibility and productivity for **Cardano smart contract developers**.
-
----
-
+[1]: https://raw.githubusercontent.com/wimsio/plutus-nix/main/README.md "raw.githubusercontent.com"
+[2]: https://raw.githubusercontent.com/wimsio/plutus-nix/main/coxy-plutus-builder/coxy-plutus-builder-tutorial.md "raw.githubusercontent.com"
+[3]: https://iohk.zendesk.com/hc/en-us/articles/4415402727321-Running-a-local-version-of-Plutus-playground "Running a local version of Plutus playground – IOHK Support"
+[4]: https://raw.githubusercontent.com/wimsio/plutus-nix/main/flake.nix "raw.githubusercontent.com"
