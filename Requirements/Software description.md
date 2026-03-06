@@ -1,3 +1,10 @@
+# Coxy Plutus Playground
+
+### Developer Documentation & Project Specification
+
+An open development project to transform **Coxy Plutus Builder Studio (CPBS)** into a full **Plutus Smart Contract Playground**, similar to **Remix IDE** used in the Ethereum ecosystem.
+
+The playground will provide developers with a **web-based development environment** where they can write, edit, compile, and test **Plutus** smart contracts without installing complex local toolchains.
 
 # Plutus Playground Studio
 
