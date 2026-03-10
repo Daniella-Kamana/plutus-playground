@@ -6,21 +6,32 @@ An open development project to transform **Coxy Plutus Builder Studio (CPBS)** i
 
 The playground will provide developers with a **web-based development environment** where they can write, edit, compile, and test **Plutus** smart contracts without installing complex local toolchains.
 
+Below is a **complete, clean, developer-focused README** integrating:
+
+* your **original README**
+* the **improved Step 2**
+* the **usability flow**
+* architecture clarity
+* developer-friendly structure
+
+It is written so it can be **pasted directly into GitHub** as your project README.
+
+---
+
 # Plutus Playground Studio
 
 Plutus Playground Studio is a **multi-language smart contract development environment for the Cardano ecosystem**.
-The platform provides an **integrated development environment (IDE)** that allows developers to **write, compile, debug, test, and deploy smart contracts directly from a browser**.
 
-The system supports multiple Cardano smart contract languages such as:
+The platform provides an **integrated development environment (IDE)** that allows developers to:
 
-* Plutus (Haskell)
-* Aiken
-* Helios
-* OpShin
-* Scalus
-* Marlowe
+* write smart contracts
+* compile and test them
+* integrate on-chain and off-chain logic
+* deploy decentralized applications
+* manage projects
+* export source code repositories
 
-The platform integrates **compiler pipelines, AI-assisted development, testing frameworks, deployment tools, and project management utilities** into a single environment.
+The goal is to provide a **browser-based development studio similar to modern cloud IDEs**, optimized specifically for **Cardano smart contract development**.
 
 ---
 
@@ -35,7 +46,7 @@ The platform integrates **compiler pipelines, AI-assisted development, testing f
 7. Compilation Pipeline
 8. Developer Workflow
 9. Deployment System
-10. Integration with GitHub
+10. GitHub Integration
 11. Project Phases
 12. Future Enhancements
 
@@ -43,34 +54,18 @@ The platform integrates **compiler pipelines, AI-assisted development, testing f
 
 # 1. Introduction
 
-Plutus Playground Studio is designed to simplify the process of developing Cardano smart contracts by providing a **browser-based development studio**.
+Plutus Playground Studio simplifies the process of developing **Cardano smart contracts** by providing a **browser-based development environment**.
 
-The system allows developers to:
+Developers can:
 
-* Write smart contracts
-* Compile and test them
-* Integrate on-chain and off-chain logic
-* Deploy applications
-* Manage projects
-* Export code repositories
+* create projects
+* write smart contracts
+* run simulations
+* test applications
+* deploy dApps
+* manage repositories
 
-The platform aims to replicate the usability of modern developer tools such as:
-
-* cloud IDEs
-* blockchain playgrounds
-* integrated CI development environments
-
-while being optimized specifically for **Cardano smart contract development**.
-
----
-
-# 2. Features
-
-The platform includes the following major capabilities.
-
-### Multi-Language Smart Contract Support
-
-Developers can write contracts using multiple Cardano languages:
+The platform supports multiple smart contract languages including:
 
 * Plutus (Haskell)
 * Aiken
@@ -81,38 +76,55 @@ Developers can write contracts using multiple Cardano languages:
 
 ---
 
-### Integrated Code Editor
+# 2. Features
 
-The IDE includes:
+## Multi-Language Smart Contract Support
+
+Developers can build contracts using multiple Cardano languages.
+
+Supported languages include:
+
+* Plutus (Haskell)
+* Aiken
+* Helios
+* OpShin
+* Scalus
+* Marlowe
+
+---
+
+## Integrated Code Editor
+
+The IDE provides a modern code editing environment including:
 
 * syntax highlighting
 * code completion
-* error highlighting
 * linting
 * multi-file editing
+* error highlighting
 * project navigation
 
-The editor is implemented using **Monaco Editor**.
+The editor is built using **Monaco Editor**.
 
 ---
 
-### Smart Contract Compilation
+## Smart Contract Compilation
 
-The system compiles smart contracts into **UPLC scripts and CBOR artifacts** ready for deployment.
+Contracts can be compiled into blockchain-ready artifacts.
 
-Compilation outputs include:
+Compilation produces:
 
-* compiled UPLC
-* CBOR script
-* script hash
+* UPLC scripts
+* CBOR artifacts
+* script hashes
+* execution cost reports
 * size metrics
-* execution budget analysis
 
 ---
 
-### Testing Framework
+## Testing Framework
 
-The IDE provides tools for:
+The system supports multiple testing approaches:
 
 * unit tests
 * contract simulations
@@ -122,97 +134,107 @@ The IDE provides tools for:
 
 ---
 
-### AI-Assisted Coding
+## AI-Assisted Development
 
-Developers receive assistance for:
+Developers receive AI support for:
 
 * code generation
-* debugging suggestions
-* optimization hints
+* debugging assistance
+* optimization suggestions
+* documentation generation
 * contract templates
 
 ---
 
-### Project Management
+## Project Management
 
-Users can manage development workspaces including:
+The IDE supports development workspaces including:
 
-* projects
-* folders
-* scripts
+* project creation
+* folder management
+* script organization
 * configuration files
-* test files
+* test directories
 
 ---
 
-### Deployment System
+## Deployment System
 
-The platform supports deploying smart contracts to Cardano networks including:
+Smart contracts can be deployed to Cardano networks:
 
-* Preview
-* PreProd
+* Preview Testnet
+* PreProd Testnet
 * Mainnet
 
 ---
 
-### GitHub Integration
+## GitHub Integration
 
-Developers can export their projects by:
+Developers can:
 
-* pushing code directly to GitHub
-* downloading project source code
+* push projects directly to GitHub
+* export repositories
+* download full source code
 
 ---
 
 # 3. System Specifications
 
-The system is composed of the following main components.
+The platform consists of several core components.
 
-### Frontend
+---
 
-The frontend provides the browser IDE.
+## Frontend
+
+The frontend provides the browser-based development environment.
 
 Technologies:
 
 * React
+* Html/css
+* Javascript
 * Next.js
 * TypeScript
 * Monaco Editor
+* vue.js
 
 Responsibilities:
 
 * code editing
-* workspace management
-* build execution
-* artifact visualization
+* project navigation
+* compilation requests
 * debugging interface
+* artifact visualization
+* wallet interaction
 
 ---
 
-### Backend Services
+## Backend Services
 
-Backend services handle compilation and project management.
+Backend services handle platform logic.
 
 Technologies:
 
 * Node.js
 * TypeScript
-* Haskell services (for Plutus)
-* Python services (for OpShin)
+* Haskell services
+* Python services
+* Mysql
+* Sql-lite
 
 Responsibilities:
 
-* compile requests
-* project storage
-* artifact generation
-* execution tracing
+* project management
+* compilation requests
+* artifact storage
 * authentication
+* execution tracing
 
 ---
 
-### Compilation Workers
+## Compilation Workers
 
-Dedicated worker services compile contracts using the appropriate language toolchain.
+Dedicated workers compile smart contracts using language-specific toolchains.
 
 Examples:
 
@@ -221,18 +243,18 @@ Examples:
 * Helios compiler
 * OpShin compiler
 
-Workers produce standardized artifacts used by the deployment pipeline.
+Workers generate deployable artifacts.
 
 ---
 
-### Data Storage
+## Data Storage
 
 The system stores:
 
 * projects
-* source files
-* compilation results
-* artifacts
+* source code
+* compilation artifacts
+* deployment logs
 * user accounts
 
 Recommended database:
@@ -243,9 +265,13 @@ Recommended database:
 
 # 4. Development Requirements
 
-To develop the system locally, the following tools are required.
+To run the system locally developers must install the following tools.
 
-### Development Environment
+---
+
+## Development Environment
+
+Required tools:
 
 * Node.js
 * Docker
@@ -254,7 +280,7 @@ To develop the system locally, the following tools are required.
 
 ---
 
-### Smart Contract Toolchains
+## Smart Contract Toolchains
 
 Developers must install:
 
@@ -265,7 +291,7 @@ Developers must install:
 
 ---
 
-### Frontend Dependencies
+## Frontend Dependencies
 
 Frontend development requires:
 
@@ -277,13 +303,13 @@ Frontend development requires:
 
 # 5. Usability Flow Specification
 
-The following usability workflow defines the **expected behavior of the development environment**.
+The following workflow describes how developers interact with the platform.
 
-This section serves as a **functional specification for developers implementing the platform**.
+This section serves as a **functional specification for system implementation**.
 
 ---
 
-## Step 1 — Language Selection
+# Step 1 — Language Selection
 
 When starting a new project, the user selects a smart contract language.
 
@@ -304,19 +330,24 @@ The IDE automatically configures:
 
 ---
 
-## Step 2 — Project Setup
+# Step 2 — AI Project Initialization and Environment Setup
 
-After selecting a language, the developer creates a project workspace.
+After selecting a language, the platform initializes a **full decentralized application workspace using AI-assisted project generation**.
 
-The project includes:
+The developer provides a **prompt describing the desired application**.
 
-* folders
-* smart contract scripts
-* configuration files
-* testing directories
-* off-chain code folders
+Example prompt:
 
-Example structure:
+```
+Create a Cardano smart contract that locks ADA and allows the owner to unlock it later.
+Use Plutus.
+Generate on-chain code, off-chain logic, frontend interface, backend API,
+unit tests, and integrate Coxy Wallet on the PreProd testnet.
+```
+
+The system generates a **complete project structure**.
+
+Example:
 
 ```
 project/
@@ -324,62 +355,206 @@ project/
    tests/
    offchain/
    frontend/
+   backend/
+   database/
    config/
 ```
 
 ---
 
-## Step 3 — Coding in the Editor
+## Wallet Integration Requirement
 
-The platform supports **two coding approaches**.
+All generated projects support **Coxy Wallet**.
 
-### A. Wizard-Based Contract Builder
+Wallet functionality includes:
 
-Users can generate contracts using visual tools such as:
-
-* Coxy Plutus Builder
-* Marlowe block-style contract editor
-
-This approach allows non-expert developers to create contracts visually.
+* connection to Cardano **PreProd testnet**
+* wallet authentication
+* transaction signing
+* smart contract interaction
+* balance retrieval
 
 ---
 
-### B. Manual Coding
+## GitHub Integration
 
-Developers can write contracts directly in the code editor.
+Developers may link a GitHub repository during project initialization.
 
-Editor capabilities include:
+Supported features:
+
+* repository creation
+* automatic commits
+* version control
+* source code export
+
+Example workflow:
+
+```
+git init
+git remote add origin <repository>
+git push origin main
+```
+
+---
+
+## Example Contract Templates
+
+Developers can generate projects using predefined examples.
+
+Example:
+
+### Lock / Unlock Contract
+
+This contract locks ADA at a script address and allows the owner to unlock it.
+
+Generated components include:
+
+**On-chain**
+
+* validator script
+* datum definitions
+* redeemer definitions
+
+**Off-chain**
+
+* lock transaction builder
+* unlock transaction builder
+
+**Frontend**
+
+* lock funds UI
+* unlock funds UI
+
+**Backend**
+
+* transaction coordination service
+
+Additional templates include:
+
+* NFT minting contracts
+* escrow contracts
+* auction contracts
+* staking contracts
+* multi-signature wallets
+
+---
+
+## Testing Framework
+
+All layers include automated tests.
+
+Testing categories:
+
+### On-chain tests
+
+* validator logic
+* datum validation
+* redeemer validation
+
+### Off-chain tests
+
+* transaction generation
+* wallet interaction
+
+### Frontend tests
+
+* component tests
+* UI interaction tests
+
+### Backend tests
+
+* API tests
+* database integration tests
+
+---
+
+## Template-Based Frontend Builder
+
+The platform includes a visual template system.
+
+Templates may include:
+
+* NFT marketplace UI
+* DeFi dashboard
+* staking dashboard
+* DAO governance panel
+
+---
+
+## Development Modes
+
+Developers can choose between two development approaches.
+
+### Wizard-Based Development
+
+Visual smart contract creation using tools such as:
+
+* Coxy Plutus Builder
+* Marlowe block-based editor
+
+---
+
+### IDE-Based Development
+
+Advanced users can write contracts manually.
+
+Workflow:
+
+```
+Editor → Compile → Test → Deploy
+```
+
+---
+
+# Step 3 — Coding in the Editor
+
+Developers write contracts using:
+
+### Wizard-Based Contract Builder
+
+Visual smart contract generation tools.
+
+Examples:
+
+* Coxy Plutus Builder
+* Marlowe contract editor
+
+---
+
+### Manual Coding
+
+Direct coding in the IDE with:
 
 * syntax highlighting
-* code completion
-* automatic formatting
+* auto-completion
+* formatting
 * real-time error detection
 
 ---
 
-## Step 4 — Build / Compile
+# Step 4 — Build / Compile
 
-The developer compiles the smart contract.
+Developers compile smart contracts using the IDE build system.
 
-The compilation pipeline produces:
+Compilation produces:
 
 * UPLC script
 * CBOR artifact
 * script hash
-* execution cost report
+* execution cost analysis
 
-Errors and warnings are displayed inside the IDE.
+Errors appear directly in the editor.
 
 ---
 
-## Step 5 — Debugging and Tracing
+# Step 5 — Debugging and Tracing
 
-The debugging environment provides:
+Debugging tools include:
 
 * transaction simulation
 * execution tracing
-* runtime debugging
-* error analysis
+* validator debugging
+* error inspection
 
 Developers can inspect:
 
@@ -389,28 +564,22 @@ Developers can inspect:
 
 ---
 
-## Step 6 — AI Assisted Development and Testing
+# Step 6 — AI Assisted Development and Testing
 
-The IDE includes AI tools that assist developers with:
+AI tools assist developers with:
 
 * code generation
 * error fixing
-* optimization suggestions
+* contract optimization
 * documentation generation
 
-The testing environment supports **Test Driven Development (TDD)**.
-
-Developers can:
-
-* write tests
-* run tests automatically
-* verify contract behavior
+The system supports **Test Driven Development (TDD)**.
 
 ---
 
-## Step 7 — Off-Chain Code Generation
+# Step 7 — Off-Chain Code Generation
 
-The platform automatically generates **off-chain interaction code**.
+The platform automatically generates off-chain interaction code.
 
 Examples:
 
@@ -418,7 +587,7 @@ Examples:
 * wallet interactions
 * contract calls
 
-Off-chain code can be generated in:
+Supported languages:
 
 * JavaScript
 * TypeScript
@@ -426,75 +595,72 @@ Off-chain code can be generated in:
 
 ---
 
-## Step 8 — Integration of On-Chain and Off-Chain Code
+# Step 8 — On-Chain and Off-Chain Integration
 
-The system integrates both components into a full decentralized application.
+The system integrates both layers into a working decentralized application.
 
-Integration features include:
-
-* transaction execution tests
-* contract invocation testing
-* wallet simulations
-
-Integration tests verify:
+Integration testing verifies:
 
 * correct contract invocation
-* correct transaction flow
+* transaction execution
 * expected outputs
 
 ---
 
-## Step 9 — Frontend Development
+# Step 9 — Frontend Development
 
-Developers can create a frontend interface for interacting with the contract.
+Developers build user interfaces for interacting with contracts.
 
-Frontend features include:
+Frontend capabilities include:
 
 * wallet connection
 * contract interaction
-* transaction display
-
-Frontend code can also include automated tests.
+* transaction history
+* balance display
 
 ---
 
-## Step 10 — Server-Side Data Management
+# Step 10 — Server-Side Data Management
 
-The application provides backend data services including:
+Backend services manage:
 
 * user accounts
-* project storage
 * contract metadata
+* project storage
 * deployment logs
 
-Server-side services can be implemented using:
+Backend technologies include:
 
 * Node.js
 * Haskell services
 
 ---
 
-## Step 11 — Application Deployment
+# Step 11 — Application Deployment
 
-The platform supports **deployment of decentralized applications online**.
-
-Deployment works similarly to **WordPress-style hosting systems** where developers can publish applications directly from the IDE.
+The platform enables direct deployment of decentralized applications.
 
 Deployment includes:
 
-* hosting frontend
-* connecting smart contracts
-* configuring backend services
+* frontend hosting
+* smart contract integration
+* backend service configuration
+
+Deployment targets:
+
+* Preview Testnet
+* PreProd Testnet
+* Mainnet
 
 ---
 
-## Step 12 — Source Code Export
+# Step 12 — Source Code Export
 
-Developers can export projects using two methods.
+Developers can export projects in two ways.
 
 ### GitHub Integration
 
-The IDE supports direct repository push:
+Push directly to GitHub.
 
 ```
 git push origin main
@@ -504,22 +670,22 @@ git push origin main
 
 ### Project Download
 
-Users can download the entire project as a source code package.
+Download the entire project as a source code archive.
 
 ---
 
 # 6. Project Phases
 
-The development of the system is divided into phases.
+Development is organized into phases.
 
 Phase 1
 IDE foundation and editor integration
 
 Phase 2
-Compiler pipeline implementation
+Smart contract compiler pipeline
 
 Phase 3
-Testing and debugging environment
+Testing and debugging system
 
 Phase 4
 Off-chain integration
@@ -534,13 +700,13 @@ AI development tools
 
 # 7. Future Enhancements
 
-Planned improvements include:
+Planned features include:
 
 * collaborative editing
 * plugin system
-* marketplace for contract templates
+* contract template marketplace
 * multi-user workspaces
-* contract audit tools
+* contract auditing tools
+* AI code review
 
 ---
-
