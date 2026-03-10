@@ -2,325 +2,414 @@
 
 These diagrams illustrate the **core system architecture, services, and workflows** that implement the usability flow specification.
 
+Below are **clear architecture and workflow diagrams** you can include in your GitHub README or documentation to explain **Plutus Playground Studio** visually.
+These diagrams are written in **Mermaid**, which GitHub renders automatically.
+
+
+```
+Table of contents
+│
+├── Introduction
+├── Features
+├── Architecture Diagram
+├── Developer Workflow
+├── Compilation Pipeline
+├── AI Project Generation
+├── Smart Contract Interaction
+├── Deployment Pipeline
+├── Development Modes
+├── Project Structure
+├── Roadmap
+```
+
 ---
 
-# 1. High-Level System Architecture
 
-This diagram shows the **main components of the platform**.
+# 1. System Architecture Diagram
+
+This diagram shows how **frontend, backend, compilers, and blockchain interact**.
 
 ```mermaid
-flowchart LR
+flowchart TB
 
-User[Developer Browser]
+Developer[Developer]
 
-User --> IDE[Web IDE Frontend]
+subgraph Browser IDE
+Editor[Monaco Code Editor]
+AI[AI Assistant]
+ProjectManager[Project Manager]
+Wallet[Coxy Wallet Integration]
+end
 
-IDE --> API[Backend API Gateway]
+subgraph Backend Services
+API[Node.js API Server]
+Auth[Authentication Service]
+ProjectDB[(Project Database)]
+ArtifactDB[(Artifact Storage)]
+end
 
-API --> Auth[Authentication Service]
-API --> Project[Project Management Service]
-API --> Compile[Compilation Service]
-API --> AI[AI Assistant Service]
-API --> Deploy[Deployment Service]
+subgraph Compilation Workers
+PlutusWorker[Plutus Compiler Worker]
+AikenWorker[Aiken Compiler Worker]
+HeliosWorker[Helios Compiler Worker]
+OpShinWorker[OpShin Compiler Worker]
+end
 
-Compile --> Worker1[Plutus Compiler Worker]
-Compile --> Worker2[Aiken Compiler Worker]
-Compile --> Worker3[Helios Compiler Worker]
-Compile --> Worker4[OpShin Compiler Worker]
+subgraph Blockchain
+Cardano[Cardano Network]
+end
 
-Project --> DB[(PostgreSQL Database)]
+Developer --> Editor
+Editor --> API
+AI --> API
+ProjectManager --> API
 
-Compile --> Artifacts[(Artifact Storage)]
+API --> ProjectDB
+API --> ArtifactDB
 
-Deploy --> Cardano[Cardano Network]
+API --> PlutusWorker
+API --> AikenWorker
+API --> HeliosWorker
+API --> OpShinWorker
 
-AI --> Model[AI Model Services]
+PlutusWorker --> ArtifactDB
+AikenWorker --> ArtifactDB
+HeliosWorker --> ArtifactDB
+OpShinWorker --> ArtifactDB
 
-IDE --> Wallet[Cardano Wallet Integration]
 Wallet --> Cardano
+API --> Cardano
 ```
-
-### Key Insight
-
-The architecture separates:
-
-* **Frontend IDE**
-* **API layer**
-* **Compiler workers**
-* **AI services**
-* **Blockchain deployment**
-
-This ensures the platform is **scalable and language-agnostic**.
 
 ---
 
-# 2. Frontend IDE Architecture
+# 2. Developer Workflow Diagram
 
-This diagram explains the **browser development environment**.
+This explains **how developers use the platform step by step**.
 
 ```mermaid
 flowchart TD
 
-Browser[User Browser]
+Start[Developer Opens IDE]
 
-Browser --> Next[Next.js Application]
+Language[Select Smart Contract Language]
 
-Next --> Editor[Monaco Code Editor]
-Next --> FileTree[Project File Explorer]
-Next --> Terminal[Build Terminal]
-Next --> Debugger[Debugger Panel]
-Next --> ArtifactViewer[Artifact Viewer]
+Prompt[Enter AI Project Prompt]
 
-Next --> WalletUI[Wallet Connector UI]
+Generate[AI Generates Project Structure]
 
-Next --> APIClient[API Client Layer]
+Code[Write or Edit Smart Contract]
 
-APIClient --> BackendAPI[Backend API]
+Compile[Compile Contract]
+
+Test[Run Simulations & Tests]
+
+Debug[Debug Validator Execution]
+
+Integrate[Generate Off-Chain Logic]
+
+Frontend[Build Frontend UI]
+
+Deploy[Deploy to Cardano Network]
+
+Export[Export or Push to GitHub]
+
+Start --> Language
+Language --> Prompt
+Prompt --> Generate
+Generate --> Code
+Code --> Compile
+Compile --> Test
+Test --> Debug
+Debug --> Integrate
+Integrate --> Frontend
+Frontend --> Deploy
+Deploy --> Export
 ```
-
-### Responsibilities
-
-Frontend handles:
-
-* project navigation
-* editing smart contracts
-* running builds
-* displaying artifacts
-* debugging traces
-* wallet interaction
 
 ---
 
-# 3. Backend Service Architecture
+# 3. Compilation Pipeline Diagram
 
-This diagram explains how **backend services are organized**.
+This shows **how contracts are compiled internally**.
 
 ```mermaid
 flowchart LR
 
-Gateway[API Gateway]
+Source[Smart Contract Source Code]
 
-Gateway --> AuthService
-Gateway --> ProjectService
-Gateway --> CompileService
-Gateway --> TestService
-Gateway --> DeployService
-Gateway --> AIService
+Parser[Language Parser]
 
-ProjectService --> DB[(PostgreSQL)]
+IR[Intermediate Representation]
 
-CompileService --> Queue[(Build Queue)]
+Compiler[Language Compiler]
 
-Queue --> PlutusWorker
-Queue --> AikenWorker
-Queue --> HeliosWorker
-Queue --> OpshinWorker
+UPLC[UPLC Script]
 
-CompileService --> ArtifactStore[(Artifact Storage)]
+CBOR[CBOR Artifact]
 
-DeployService --> CardanoNode[Cardano Node API]
+Hash[Script Hash]
 
-AIService --> LLM[AI Model Engine]
-```
+Cost[Execution Cost Analysis]
 
-### Key Architecture Decision
-
-Compilation is handled by **worker queues** to allow:
-
-* horizontal scaling
-* language-specific environments
-* containerized builds
-
----
-
-# 4. Smart Contract Compilation Pipeline
-
-This diagram shows how code becomes **deployable blockchain scripts**.
-
-```mermaid
-flowchart LR
-
-EditorCode[Smart Contract Code]
-
-EditorCode --> BuildRequest
-
-BuildRequest --> CompilerService
-
-CompilerService --> Toolchain
-
-Toolchain --> UPLC[Compiled UPLC Script]
-Toolchain --> CBOR[CBOR Artifact]
-Toolchain --> ScriptHash
-Toolchain --> CostAnalysis
-
-UPLC --> ArtifactStorage
-CBOR --> ArtifactStorage
-ScriptHash --> ArtifactStorage
-CostAnalysis --> ArtifactStorage
-
-ArtifactStorage --> IDEArtifacts[Artifact Viewer]
+Source --> Parser
+Parser --> IR
+IR --> Compiler
+Compiler --> UPLC
+UPLC --> CBOR
+CBOR --> Hash
+UPLC --> Cost
 ```
 
 ---
 
-# 5. Smart Contract Testing Architecture
+# 4. AI Project Generation Flow
+
+This explains how **AI builds the entire project automatically**.
 
 ```mermaid
 flowchart TD
 
-Developer[Test Developer]
+Prompt[Developer Prompt]
 
-Developer --> WriteTests
+AIEngine[AI Generation Engine]
 
-WriteTests --> TestRunner
+Contracts[Generate On-Chain Contracts]
 
-TestRunner --> Simulator[Blockchain Simulator]
+OffChain[Generate Off-Chain Logic]
 
-Simulator --> ExecuteTx[Execute Transactions]
+Frontend[Generate Frontend UI]
 
-ExecuteTx --> Results[Test Results]
+Backend[Generate Backend API]
 
-Results --> IDEPanel[Test Dashboard]
+Tests[Generate Tests]
+
+Config[Generate Config Files]
+
+Project[Complete Project Workspace]
+
+Prompt --> AIEngine
+
+AIEngine --> Contracts
+AIEngine --> OffChain
+AIEngine --> Frontend
+AIEngine --> Backend
+AIEngine --> Tests
+AIEngine --> Config
+
+Contracts --> Project
+OffChain --> Project
+Frontend --> Project
+Backend --> Project
+Tests --> Project
+Config --> Project
 ```
-
-Testing supports:
-
-* unit tests
-* simulation
-* integration tests
-* property tests
 
 ---
 
-# 6. On-Chain / Off-Chain Integration Architecture
+# 5. Smart Contract Interaction Diagram
+
+This shows **how the frontend interacts with Cardano smart contracts**.
+
+```mermaid
+sequenceDiagram
+
+participant User
+participant Frontend
+participant Wallet
+participant Backend
+participant Cardano
+
+User->>Frontend: Connect Wallet
+Frontend->>Wallet: Request Connection
+Wallet-->>Frontend: Wallet Connected
+
+User->>Frontend: Lock ADA
+
+Frontend->>Backend: Build Transaction
+Backend->>Wallet: Request Signature
+Wallet-->>Backend: Signed Transaction
+
+Backend->>Cardano: Submit Transaction
+
+Cardano-->>Frontend: Transaction Confirmation
+```
+
+---
+
+# 6. Deployment Pipeline
+
+This explains how **dApps are deployed from the IDE**.
 
 ```mermaid
 flowchart LR
 
-OnChain[Smart Contract Code]
+Code[Project Source Code]
 
-OffChain[Off-chain Application]
+Build[Compile Smart Contract]
 
-OnChain --> Script
+Artifacts[Generate Artifacts]
 
-Script --> TransactionBuilder
+Upload[Upload to Backend]
 
-OffChain --> TransactionBuilder
+Deploy[Deploy to Cardano Network]
 
-TransactionBuilder --> Wallet
+Host[Deploy Frontend]
 
-Wallet --> SubmitTx
+Live[dApp Live]
 
-SubmitTx --> CardanoNetwork
+Code --> Build
+Build --> Artifacts
+Artifacts --> Upload
+Upload --> Deploy
+Deploy --> Host
+Host --> Live
 ```
-
-This layer connects:
-
-* **smart contracts**
-* **wallet interactions**
-* **transaction building**
 
 ---
 
-# 7. Deployment Architecture
-
-```mermaid
-flowchart LR
-
-ProjectCode --> BuildArtifacts
-
-BuildArtifacts --> DeploymentService
-
-DeploymentService --> FrontendHosting
-DeploymentService --> BackendHosting
-DeploymentService --> CardanoDeployment
-
-FrontendHosting --> WebApp
-
-BackendHosting --> APIService
-
-CardanoDeployment --> Blockchain
-```
-
-This enables **WordPress-style deployment for dApps**.
-
----
-
-# 8. AI Assisted Development Architecture
+# 7. Project Directory Structure Diagram
 
 ```mermaid
 flowchart TD
 
-Developer --> AIRequest
+ProjectRoot[Project Root]
 
-AIRequest --> AIGateway
+Contracts[contracts/]
+Tests[tests/]
+Offchain[offchain/]
+Frontend[frontend/]
+Backend[backend/]
+Database[database/]
+Config[config/]
 
-AIGateway --> CodeGen
-AIGateway --> DebugAssist
-AIGateway --> Optimization
-AIGateway --> Documentation
-
-CodeGen --> IDEEditor
-DebugAssist --> IDEDebugger
-Optimization --> CompilerHints
-Documentation --> IDEDocs
+ProjectRoot --> Contracts
+ProjectRoot --> Tests
+ProjectRoot --> Offchain
+ProjectRoot --> Frontend
+ProjectRoot --> Backend
+ProjectRoot --> Database
+ProjectRoot --> Config
 ```
 
 ---
 
-# 9. Project Storage Architecture
-
-```mermaid
-flowchart LR
-
-UserProject --> FileStorage
-
-FileStorage --> Contracts
-FileStorage --> Tests
-FileStorage --> Offchain
-FileStorage --> Frontend
-FileStorage --> Config
-
-FileStorage --> DB[(PostgreSQL)]
-
-DB --> Projects
-DB --> Users
-DB --> Artifacts
-DB --> DeploymentLogs
-```
-
----
-
-# 10. Developer Workflow Diagram
-
-This diagram matches your **Usability Flow Specification**.
+# 8. Development Modes Diagram
 
 ```mermaid
 flowchart TD
 
-Start --> SelectLanguage
+Developer[Developer]
 
-SelectLanguage --> CreateProject
+Mode{Choose Development Mode}
 
-CreateProject --> WriteCode
+Wizard[Wizard-Based Builder]
 
-WriteCode --> Compile
+IDE[IDE Manual Coding]
 
-Compile --> Debug
+Builder[Coxy Plutus Builder]
 
-Debug --> WriteTests
+Marlowe[Marlowe Block Editor]
 
-WriteTests --> GenerateOffChain
+Editor[Code Editor]
 
-GenerateOffChain --> BuildFrontend
+Compile[Compile & Test]
 
-BuildFrontend --> IntegrateApp
+Developer --> Mode
 
-IntegrateApp --> Deploy
+Mode --> Wizard
+Mode --> IDE
 
-Deploy --> ExportCode
+Wizard --> Builder
+Wizard --> Marlowe
 
-ExportCode --> End
+IDE --> Editor
+
+Builder --> Compile
+Marlowe --> Compile
+Editor --> Compile
 ```
 
 ---
+
+# 9. Platform Component Architecture
+
+```mermaid
+flowchart TB
+
+subgraph Frontend
+IDE[Web IDE]
+Wallet[Coxy Wallet]
+UI[User Interface]
+end
+
+subgraph Backend
+API[Node.js API]
+Services[Microservices]
+Auth[Auth Service]
+end
+
+subgraph Workers
+Compiler[Compiler Workers]
+AI[AI Engine]
+end
+
+subgraph Storage
+DB[(PostgreSQL)]
+Artifacts[(Artifacts Storage)]
+end
+
+subgraph Blockchain
+Cardano[Cardano Network]
+end
+
+IDE --> API
+UI --> API
+Wallet --> Cardano
+
+API --> Services
+API --> DB
+API --> Artifacts
+
+Services --> Compiler
+Services --> AI
+
+Compiler --> Artifacts
+API --> Cardano
+```
+
+---
+
+# 10. Full Platform Overview
+
+```mermaid
+flowchart LR
+
+Dev[Developer]
+
+IDE[Plutus Playground Studio]
+
+AI[AI Assistant]
+
+Compiler[Smart Contract Compilers]
+
+Tests[Testing Framework]
+
+Deploy[Deployment System]
+
+Cardano[Cardano Blockchain]
+
+GitHub[GitHub Repository]
+
+Dev --> IDE
+IDE --> AI
+IDE --> Compiler
+IDE --> Tests
+Tests --> Deploy
+Compiler --> Deploy
+Deploy --> Cardano
+IDE --> GitHub
+```
+
+---
+
